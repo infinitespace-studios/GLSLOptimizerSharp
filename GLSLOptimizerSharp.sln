@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLSLOptimizerSharp", "GLSLOptimizerSharp.csproj", "{EB3BB3B1-3C1D-45E9-866D-4F4A691293FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLSLOptimizerSharp.Tests", "GLSLOptimizerSharp.Tests\GLSLOptimizerSharp.Tests.csproj", "{7421A241-79A3-46A7-B390-3A9A817C907B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7421A241-79A3-46A7-B390-3A9A817C907B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7421A241-79A3-46A7-B390-3A9A817C907B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7421A241-79A3-46A7-B390-3A9A817C907B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7421A241-79A3-46A7-B390-3A9A817C907B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB3BB3B1-3C1D-45E9-866D-4F4A691293FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB3BB3B1-3C1D-45E9-866D-4F4A691293FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB3BB3B1-3C1D-45E9-866D-4F4A691293FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB3BB3B1-3C1D-45E9-866D-4F4A691293FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
