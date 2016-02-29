@@ -23,12 +23,12 @@ namespace GLSLOptimizerSharp.Tests
 			sb.Append ("void vs_main () {");
 			sb.Append ("}");
 
-			IntPtr source = Marshal.StringToHGlobalAuto (sb.ToString());
+			IntPtr source = Marshal.StringToHGlobalAnsi (sb.ToString());
 			var shader = GLSLOptimizer.glslopt_optimize (ctx, GLSLOptimizer.glslopt_shader_type.kGlslOptShaderVertex, source, 0);
 			Assert.AreNotEqual (shader, IntPtr.Zero, "Failed to create shader");
 			if (GLSLOptimizer.glslopt_get_status (shader)) {
 				var o = GLSLOptimizer.glslopt_get_output (shader);
-				string opt = Marshal.PtrToStringAuto (o);
+				string opt = Marshal.PtrToStringAnsi (o);
 
 				var count = GLSLOptimizer.glslopt_shader_get_input_count (shader);
 				for (int i = 0; i < count; i++) {
@@ -45,7 +45,7 @@ namespace GLSLOptimizerSharp.Tests
 						out outMatSize,
 						out outArraySize,
 						out outLocation);
-					var info = Marshal.PtrToStringAuto(outName);
+					var info = Marshal.PtrToStringAnsi(outName);
 				}
 
 				count = GLSLOptimizer.glslopt_shader_get_uniform_count (shader);
@@ -63,12 +63,12 @@ namespace GLSLOptimizerSharp.Tests
 						out outMatSize,
 						out outArraySize,
 						out outLocation);
-					var info = Marshal.PtrToStringAuto(outName);
+					var info = Marshal.PtrToStringAnsi(outName);
 				}
 
 			} else {
 				var log = GLSLOptimizer.glslopt_get_log (shader);
-				var info = Marshal.PtrToStringAuto(log);
+				var info = Marshal.PtrToStringAnsi(log);
 			}
 
 			GLSLOptimizer.glslopt_shader_delete (shader);
