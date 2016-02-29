@@ -21,7 +21,7 @@ namespace GLSLOptimizerSharp.Util
  }
  glslopt_cleanup (ctx);
 */
-    public static class NativeMethods
+    internal static class NativeMethods
     {
         const string DllName = "glsl_optimizer.dll";
 
@@ -101,10 +101,11 @@ namespace GLSLOptimizerSharp.Util
 
 		int glslopt_shader_get_texture_count (glslopt_shader* shader);
 		void glslopt_shader_get_texture_desc (glslopt_shader* shader, int index, const char** outName, glslopt_basic_type* outType, glslopt_precision* outPrec, int* outVecSize, int* outMatSize, int* outArraySize, int* outLocation);
+        */
 
-		// Get *very* approximate shader stats:
-		// Number of math, texture and flow control instructions.
-		void glslopt_shader_get_stats (glslopt_shader* shader, int* approxMath, int* approxTex, int* approxFlow);
-		*/
+        // Get *very* approximate shader stats:
+        // Number of math, texture and flow control instructions.
+        [DllImport(DllName, CharSet = CharSet.Ansi)]
+        public static extern void glslopt_shader_get_stats(IntPtr shader, out int approxMath, out int approxTex, out int approxFlow);
     }
 }

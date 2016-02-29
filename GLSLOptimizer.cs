@@ -97,6 +97,12 @@ namespace GLSLOptimizerSharp
                     });
                 }
 
+                int outMath, outTex, outFlow;
+                NativeMethods.glslopt_shader_get_stats(shader, out outMath, out outTex, out outFlow);
+                result.Statistics.ApproxMathInstructions = outMath;
+                result.Statistics.ApproxTextureInstructions = outTex;
+                result.Statistics.ApproxControlFlowInstructions = outFlow;
+
                 return result;
             }
             finally
