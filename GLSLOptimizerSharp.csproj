@@ -31,8 +31,16 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicType.cs" />
+    <Compile Include="OptimizationOptions.cs" />
+    <Compile Include="OptimizationResult.cs" />
+    <Compile Include="Precision.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GLSLOptimizer.cs" />
+    <Compile Include="ShaderType.cs" />
+    <Compile Include="Target.cs" />
+    <Compile Include="Util\NativeMethods.cs" />
+    <Compile Include="VariableInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

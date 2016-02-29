@@ -1,150 +1,114 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using GLSLOptimizerSharp.Util;
 
-namespace GLSLOptomizerSharp
+namespace GLSLOptimizerSharp
 {
-	/*
- Main GLSL optimizer interface.
- See ../../README.md for more instructions.
+    public class GLSLOptimizer : IDisposable
+    {
+        private readonly IntPtr _ctx;
 
- General usage:
+        public GLSLOptimizer(Target target)
+        {
+            _ctx = NativeMethods.glslopt_initialize(target);
+            if (_ctx == IntPtr.Zero)
+                throw new Exception("Failed to create context");
+        }
 
- ctx = glslopt_initialize();
- for (lots of shaders) {
-   shader = glslopt_optimize (ctx, shaderType, shaderSource, options);
-   if (glslopt_get_status (shader)) {
-     newSource = glslopt_get_output (shader);
-   } else {
-     errorLog = glslopt_get_log (shader);
-   }
-   glslopt_shader_delete (shader);
- }
- glslopt_cleanup (ctx);
-*/
-	public static class GLSLOptimizer {
-		
-		struct glslopt_shader {}
-		struct glslopt_ctx {}
+        public OptimizationResult Optimize(ShaderType shaderType, string source, OptimizationOptions options)
+        {
+            var sourcePtr = Marshal.StringToHGlobalAnsi(source);
+            var shader = NativeMethods.glslopt_optimize(_ctx, shaderType, sourcePtr, (uint) options);
+            if (shader == IntPtr.Zero)
+                throw new Exception("Failed to create shader");
 
-		public enum glslopt_shader_type {
-			kGlslOptShaderVertex = 0,
-			kGlslOptShaderFragment,
-		};
+            try
+            {
+                if (!NativeMethods.glslopt_get_status(shader))
+                {
+                    var log = NativeMethods.glslopt_get_log(shader);
+                    var info = Marshal.PtrToStringAnsi(log);
+                    throw new Exception("Error parsing shader: " + info);
+                }
 
-		// Options flags for glsl_optimize
-		public enum glslopt_options {
-			kGlslOptionSkipPreprocessor = (1<<0), // Skip preprocessing shader source. Saves some time if you know you don't need it.
-			kGlslOptionNotFullShader = (1<<1), // Passed shader is not the full shader source. This makes some optimizations weaker.
-		};
+                var outputPtr = NativeMethods.glslopt_get_output(shader);
+                var output = Marshal.PtrToStringAnsi(outputPtr);
 
-		// Optimizer target language
-		public enum glslopt_target {
-			kGlslTargetOpenGL = 0,
-			kGlslTargetOpenGLES20 = 1,
-			kGlslTargetOpenGLES30 = 2,
-			kGlslTargetMetal = 3,
-		};
+                var result = new OptimizationResult();
+                result.OutputCode = output;
 
-		// Type info
-		public enum glslopt_basic_type {
-			kGlslTypeFloat = 0,
-			kGlslTypeInt,
-			kGlslTypeBool,
-			kGlslTypeTex2D,
-			kGlslTypeTex3D,
-			kGlslTypeTexCube,
-			kGlslTypeOther,
-			kGlslTypeCount
-		};
-		public enum glslopt_precision {
-			kGlslPrecHigh = 0,
-			kGlslPrecMedium,
-			kGlslPrecLow,
-			kGlslPrecCount
-		};
+                var inputCount = NativeMethods.glslopt_shader_get_input_count(shader);
+                for (int i = 0; i < inputCount; i++)
+                {
+                    IntPtr outName;
+                    int outLocation, outArraySize, outMatSize, outVecSize;
+                    BasicType outType;
+                    Precision outPrec;
 
-		const string DllName = "glsl_optimizer.dll";
+                    NativeMethods.glslopt_shader_get_input_desc(shader, i,
+                        out outName,
+                        out outType,
+                        out outPrec,
+                        out outVecSize,
+                        out outMatSize,
+                        out outArraySize,
+                        out outLocation);
+                    var name = Marshal.PtrToStringAnsi(outName);
 
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern IntPtr glslopt_initialize (glslopt_target target);
+                    result.Inputs.Add(new VariableInfo
+                    {
+                        Name = name,
+                        Type = outType,
+                        Precision = outPrec,
+                        VectorSize = outVecSize,
+                        MatrixSize = outMatSize,
+                        ArraySize = outArraySize,
+                        Location = outLocation
+                    });
+                }
 
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern void glslopt_cleanup (IntPtr ctx);
+                var uniformCount = NativeMethods.glslopt_shader_get_uniform_count(shader);
+                for (int i = 0; i < uniformCount; i++)
+                {
+                    IntPtr outName;
+                    int outLocation, outArraySize, outMatSize, outVecSize;
+                    BasicType outType;
+                    Precision outPrec;
 
-		[DllImport (DllName,CharSet = CharSet.Ansi)]
-		public static extern IntPtr glslopt_optimize (IntPtr ctx,
-			glslopt_shader_type type,
-			IntPtr shaderSource,
-			uint options);
+                    NativeMethods.glslopt_shader_get_uniform_desc(shader, i,
+                        out outName,
+                        out outType,
+                        out outPrec,
+                        out outVecSize,
+                        out outMatSize,
+                        out outArraySize,
+                        out outLocation);
+                    var name = Marshal.PtrToStringAnsi(outName);
 
-		[DllImport (DllName,CharSet = CharSet.Ansi)]
-		public static extern bool glslopt_get_status (IntPtr shader);
+                    result.Uniforms.Add(new VariableInfo
+                    {
+                        Name = name,
+                        Type = outType,
+                        Precision = outPrec,
+                        VectorSize = outVecSize,
+                        MatrixSize = outMatSize,
+                        ArraySize = outArraySize,
+                        Location = outLocation
+                    });
+                }
 
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern IntPtr glslopt_get_log (IntPtr shader);
+                return result;
+            }
+            finally
+            {
+                NativeMethods.glslopt_shader_delete(shader);
+            }
+        }
 
-		[DllImport(DllName, CharSet = CharSet.Ansi)]
-		public static extern IntPtr glslopt_get_output (IntPtr shader);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern void glslopt_shader_delete (IntPtr shader);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern int glslopt_shader_get_input_count (IntPtr shader);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern void glslopt_shader_get_input_desc (IntPtr shader,
-			int index,
-			out IntPtr outName,
-			out glslopt_basic_type outType,
-			out glslopt_precision outPrec,
-			out int outVecSize,
-			out int outMatSize,
-			out int outArraySize,
-			out int outLocation);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern int glslopt_shader_get_uniform_count (IntPtr shader);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern int glslopt_shader_get_uniform_total_size (IntPtr shader);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern void glslopt_shader_get_uniform_desc (IntPtr shader,
-			int index,
-			out IntPtr outName,
-			out glslopt_basic_type outType,
-			out glslopt_precision outPrec,
-			out int outVecSize,
-			out int outMatSize,
-			out int outArraySize,
-			out int outLocation);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern int glslopt_shader_get_texture_count (IntPtr shader);
-
-		[DllImport(DllName,CharSet = CharSet.Ansi)]
-		public static extern void glslopt_shader_get_texture_desc (IntPtr shader,
-			int index,
-			out IntPtr outName,
-			out glslopt_basic_type outType,
-			out glslopt_precision outPrec,
-			out int outVecSize,
-			out int outMatSize,
-			out int outArraySize,
-			out int outLocation);
-		/*
-		void glslopt_set_max_unroll_iterations (glslopt_ctx* ctx, unsigned iterations);
-
-		const char* glslopt_get_raw_output (glslopt_shader* shader);
-
-		int glslopt_shader_get_texture_count (glslopt_shader* shader);
-		void glslopt_shader_get_texture_desc (glslopt_shader* shader, int index, const char** outName, glslopt_basic_type* outType, glslopt_precision* outPrec, int* outVecSize, int* outMatSize, int* outArraySize, int* outLocation);
-
-		// Get *very* approximate shader stats:
-		// Number of math, texture and flow control instructions.
-		void glslopt_shader_get_stats (glslopt_shader* shader, int* approxMath, int* approxTex, int* approxFlow);
-		*/
+        public void Dispose()
+        {
+            NativeMethods.glslopt_cleanup(_ctx);
+        }
 	}
 }
 
