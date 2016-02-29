@@ -97,6 +97,36 @@ namespace GLSLOptimizerSharp
                     });
                 }
 
+                var textureCount = NativeMethods.glslopt_shader_get_texture_count(shader);
+                for (int i = 0; i < textureCount; i++)
+                {
+                    IntPtr outName;
+                    int outLocation, outArraySize, outMatSize, outVecSize;
+                    BasicType outType;
+                    Precision outPrec;
+
+                    NativeMethods.glslopt_shader_get_texture_desc(shader, i,
+                        out outName,
+                        out outType,
+                        out outPrec,
+                        out outVecSize,
+                        out outMatSize,
+                        out outArraySize,
+                        out outLocation);
+                    var name = Marshal.PtrToStringAnsi(outName);
+
+                    result.Textures.Add(new VariableInfo
+                    {
+                        Name = name,
+                        Type = outType,
+                        Precision = outPrec,
+                        VectorSize = outVecSize,
+                        MatrixSize = outMatSize,
+                        ArraySize = outArraySize,
+                        Location = outLocation
+                    });
+                }
+
                 int outMath, outTex, outFlow;
                 NativeMethods.glslopt_shader_get_stats(shader, out outMath, out outTex, out outFlow);
                 result.Statistics.ApproxMathInstructions = outMath;

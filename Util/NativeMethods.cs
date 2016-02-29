@@ -99,8 +99,6 @@ namespace GLSLOptimizerSharp.Util
 
 		const char* glslopt_get_raw_output (glslopt_shader* shader);
 
-		int glslopt_shader_get_texture_count (glslopt_shader* shader);
-		void glslopt_shader_get_texture_desc (glslopt_shader* shader, int index, const char** outName, glslopt_basic_type* outType, glslopt_precision* outPrec, int* outVecSize, int* outMatSize, int* outArraySize, int* outLocation);
         */
 
         // Get *very* approximate shader stats:

@@ -8,7 +8,7 @@ namespace GLSLOptimizerSharp.Tests
 	[TestFixture ()]
 	public class Test
 	{
-		[Test ()]
+		[Test]
 		public void TestCase ()
 		{
             var sb = new StringBuilder ();
@@ -24,6 +24,24 @@ namespace GLSLOptimizerSharp.Tests
                 var result = optimizer.Optimize(ShaderType.Vertex, sb.ToString(), OptimizationOptions.None);
             }
 		}
-	}
+
+        [Test]
+        public void TestFragment()
+        {
+            var code = @"
+uniform sampler2D tex;
+ 
+void main()
+{
+    vec4 color = texture2D(tex,gl_TexCoord[0].st);
+    gl_FragColor = color;
+}";
+
+            using (var optimizer = new GLSLOptimizer(Target.OpenGL))
+            {
+                var result = optimizer.Optimize(ShaderType.Fragment, code, OptimizationOptions.None);
+            }
+        }
+    }
 }
 
